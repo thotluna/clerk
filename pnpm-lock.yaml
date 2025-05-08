@@ -97,22 +97,6 @@ importers:
         specifier: ^5
         version: 5.8.3
 
-  scripts/process-github-issues:
-    dependencies:
-      '@supabase/supabase-js':
-        specifier: ^2.49.4
-        version: 2.49.4
-      playwright:
-        specifier: ^1.52.0
-        version: 1.52.0
-    devDependencies:
-      '@types/node':
-        specifier: ^20
-        version: 20.17.44
-      typescript:
-        specifier: ^5
-        version: 5.8.3
-
 packages:
 
   '@alloc/quick-lru@5.2.0':

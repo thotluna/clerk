@@ -2,15 +2,17 @@
   "name": "process-github-issues",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.8.0",
   "dependencies": {
+    "@octokit/rest": "^20.0.0",
     "@supabase/supabase-js": "^2.49.4",
     "playwright": "^1.52.0"
   },

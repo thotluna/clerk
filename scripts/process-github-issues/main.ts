@@ -40,7 +40,7 @@ interface ContestDetails {
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
-const GITHUB_TOKEN = process.env.GH_TOKEN_PROCESS_ISSUES
+const GITHUB_TOKEN = undefined
 
 let supabase: SupabaseClient | null = null
 
@@ -109,10 +109,6 @@ async function processIssues(
   )
   if (!supabase) {
     console.error('Supabase client is not available. Exiting.')
-    process.exit(1)
-  }
-  if (!GITHUB_TOKEN) {
-    console.error('GitHub token (GH_TOKEN_PROCESS_ISSUES) is not set. Exiting.')
     process.exit(1)
   }
 

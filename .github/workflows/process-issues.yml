@@ -1,0 +1,43 @@
+name: Process GitHub Issues
+
+on:
+  workflow_dispatch: # Permite la ejecución manual
+  schedule:
+    - cron: '0 */12 * * *' # Se ejecuta cada 12 horas (a las 00:00 y 12:00 UTC)
+
+jobs:
+  process_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4 # Usando v4 que es más reciente
+        with:
+          version: '10.8.0' # Especificando tu versión de pnpm
+
+      - name: Install script dependencies
+        working-directory: ./scripts/process-github-issues
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: ./scripts/process-github-issues
+        run: pnpm exec playwright install --with-deps
+
+      - name: Compile TypeScript script
+        working-directory: ./scripts/process-github-issues
+        run: pnpm run build
+
+      - name: Run issue processing script
+        working-directory: ./scripts/process-github-issues
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node dist/main.js
