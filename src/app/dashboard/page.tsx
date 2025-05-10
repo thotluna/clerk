@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabaseClient'
-import { auth } from '@clerk/nextjs/server' // Import auth para obtener userId en Server Component
-import { ContestForm } from './contest-form'
+import { auth } from '@clerk/nextjs/server'
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Plus } from 'lucide-react'
+import { ContestFormServer } from './contest-form-server'
 
 async function getContests() {
   const { userId } = await auth()
@@ -18,9 +18,9 @@ async function getContests() {
   }
 
   const { data, error } = await supabase
-    .from('contests') // Asumiendo que la tabla se llama 'contests'
+    .from('contests')
     .select('*')
-    .eq('creator_id', userId) // Filtrar por el ID del creador
+    .eq('creator_id', userId)
 
   if (error) {
     console.error('Error fetching contests:', error)
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Nuevo concurso</DialogTitle>
-              <ContestForm />
+              <ContestFormServer />
             </DialogHeader>
           </DialogContent>
         </Dialog>

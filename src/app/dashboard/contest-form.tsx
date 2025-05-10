@@ -8,6 +8,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -19,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import { CalendarIcon, Github } from 'lucide-react'
+import { CalendarIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Textarea } from '@/components/ui/textarea'
 import { Check, ChevronsUpDown } from 'lucide-react'
@@ -32,11 +33,17 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import ConnectGitHubButton from './button-github'
+import { useState } from 'react'
+import { saveContest } from './service'
+import { Switch } from '@/components/ui/switch'
 
 const contestFormSchema = z.object({
   name: z.string().min(1, 'Nombre es requerido'),
   description: z.string().min(1, 'Descripcion es requerida'),
   nameRepository: z.string().min(1, 'Repository Nombre es requerido'),
+  label: z.string().optional(),
+  active: z.boolean(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
 })
@@ -45,22 +52,38 @@ const constestFormDefaultValues = {
   name: '',
   description: '',
   nameRepository: '',
+  label: '',
+  active: false,
   startDate: undefined,
   endDate: undefined,
 }
 
 interface Props {
+  userId: string
   repositories?: string[]
+  owner?: string
 }
 
-export function ContestForm({ repositories }: Props) {
+export function ContestForm({ repositories, owner, userId }: Props) {
+  const [openRepositories, setOpenRepositories] = useState(false)
   const form = useForm({
     resolver: zodResolver(contestFormSchema),
     defaultValues: constestFormDefaultValues,
   })
 
   const onSubmit = async (data: z.infer<typeof contestFormSchema>) => {
-    console.log(data)
+    if (!owner) return
+    saveContest({
+      name: data.name,
+      description: data.description,
+      github_repo_name: data.nameRepository,
+      github_repo_owner: owner,
+      label_name: data.label,
+      start_date: data.startDate?.toISOString(),
+      end_date: data.endDate?.toISOString(),
+      active: data.active,
+      userId,
+    })
   }
 
   return (
@@ -112,10 +135,13 @@ export function ContestForm({ repositories }: Props) {
             <FormItem>
               Nombre del repositorio
               <div className="flex gap-4">
-                {repositories && (
+                {repositories && repositories.length > 0 && (
                   <>
                     <FormControl>
-                      <Popover>
+                      <Popover
+                        open={openRepositories}
+                        onOpenChange={setOpenRepositories}
+                      >
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
@@ -153,6 +179,7 @@ export function ContestForm({ repositories }: Props) {
                                         'nameRepository',
                                         repository
                                       )
+                                      setOpenRepositories(false)
                                     }}
                                   >
                                     {repository}
@@ -175,16 +202,46 @@ export function ContestForm({ repositories }: Props) {
                     <FormMessage />
                   </>
                 )}
-                {!repositories && (
-                  <Button variant="outline" className="w-[200px]">
-                    Ingresa a GitHub
-                    <Github className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
+                {!repositories && <ConnectGitHubButton />}
               </div>
             </FormItem>
           )}
         />
+
+        <div className="flex flex-col gap-4">
+          <FormField
+            control={form.control}
+            name="label"
+            render={({ field }) => (
+              <FormItem>
+                Etiqueta del issues
+                <FormControl>
+                  <Input autoComplete="off" placeholder="concurso" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel>Activar el concurso</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    aria-readonly
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -272,7 +329,7 @@ export function ContestForm({ repositories }: Props) {
         />
 
         <div className="w-full flex  flex-row-reverse gap-4 mt-4  ">
-          <Button disabled={form.formState.isLoading} type="submit">
+          <Button disabled={form.formState.isLoading || !owner} type="submit">
             Submit
           </Button>
           <Button variant="outline" type="reset" onClick={() => form.reset()}>
