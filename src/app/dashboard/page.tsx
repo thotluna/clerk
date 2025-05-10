@@ -1,14 +1,6 @@
-import { supabase } from '@/lib/supabaseClient'
 import { auth } from '@clerk/nextjs/server'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { Plus } from 'lucide-react'
-import { ContestFormServer } from './contest-form-server'
+import { ContestFormModal } from './components/contest-form-modal'
+import { getAllContest } from './services/contest.service'
 
 async function getContests() {
   const { userId } = await auth()
@@ -17,10 +9,7 @@ async function getContests() {
     return []
   }
 
-  const { data, error } = await supabase
-    .from('contests')
-    .select('*')
-    .eq('creator_id', userId)
+  const { data, error } = await getAllContest({ userId })
 
   if (error) {
     console.error('Error fetching contests:', error)
@@ -36,18 +25,7 @@ export default async function DashboardPage() {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Mis Concursos</h1>
-        <Dialog>
-          <DialogTrigger className="flex items-center cursor-pointer border border-accent px-4 py-2 rounded-md hover:bg-accent/80 hover:text-accent-foreground transition">
-            <Plus className="mr-2" />
-            Crear nuevo concurso
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Nuevo concurso</DialogTitle>
-              <ContestFormServer />
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+        <ContestFormModal />
       </div>
 
       {contests.length === 0 ? (

@@ -1,8 +1,5 @@
 'use server'
-import { createClient } from '@supabase/supabase-js'
-
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON
+import { supabase } from '@/lib/supabaseClient'
 
 export interface ContestDetails {
   id?: string
@@ -17,9 +14,20 @@ export interface ContestDetails {
   userId: string
 }
 
-export async function saveContest(contentDetail: ContestDetails) {
-  const supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!)
+interface Props {
+  userId: string
+}
 
+export async function getAllContest({ userId }: Props) {
+  const { data, error } = await supabase
+    .from('contests')
+    .select('*')
+    .eq('creator_id', userId)
+
+  return { data, error }
+}
+
+export async function saveContest(contentDetail: ContestDetails) {
   const { data, error } = await supabase.from('contests').insert([
     {
       name: contentDetail.name,

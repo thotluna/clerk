@@ -1,8 +1,5 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Form,
   FormControl,
@@ -24,7 +21,6 @@ import { CalendarIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Textarea } from '@/components/ui/textarea'
 import { Check, ChevronsUpDown } from 'lucide-react'
-
 import {
   Command,
   CommandEmpty,
@@ -34,58 +30,19 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import ConnectGitHubButton from './button-github'
-import { useState } from 'react'
-import { saveContest } from './service'
 import { Switch } from '@/components/ui/switch'
-
-const contestFormSchema = z.object({
-  name: z.string().min(1, 'Nombre es requerido'),
-  description: z.string().min(1, 'Descripcion es requerida'),
-  nameRepository: z.string().min(1, 'Repository Nombre es requerido'),
-  label: z.string().optional(),
-  active: z.boolean(),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
-})
-
-const constestFormDefaultValues = {
-  name: '',
-  description: '',
-  nameRepository: '',
-  label: '',
-  active: false,
-  startDate: undefined,
-  endDate: undefined,
-}
+import { useContentForm } from '../hooks/use-contest-form'
+import { constestFormDefaultValues } from '../constant/constans'
 
 interface Props {
   userId: string
   repositories?: string[]
-  owner?: string
+  owner: string
 }
 
 export function ContestForm({ repositories, owner, userId }: Props) {
-  const [openRepositories, setOpenRepositories] = useState(false)
-  const form = useForm({
-    resolver: zodResolver(contestFormSchema),
-    defaultValues: constestFormDefaultValues,
-  })
-
-  const onSubmit = async (data: z.infer<typeof contestFormSchema>) => {
-    if (!owner) return
-    saveContest({
-      name: data.name,
-      description: data.description,
-      github_repo_name: data.nameRepository,
-      github_repo_owner: owner,
-      label_name: data.label,
-      start_date: data.startDate?.toISOString(),
-      end_date: data.endDate?.toISOString(),
-      active: data.active,
-      userId,
-    })
-  }
-
+  const { openRepositories, setOpenRepositories, form, onSubmit } =
+    useContentForm(constestFormDefaultValues, owner, userId)
   return (
     <Form {...form}>
       <form
