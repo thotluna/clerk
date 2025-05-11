@@ -11,6 +11,8 @@ import {
 } from '@clerk/nextjs'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
+import { UserStoreSync } from '@/components/auth/UserStoreSync' // Import UserStoreSync
+import { Toaster } from '@/components/ui/sonner'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,27 +37,29 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="es-ES" suppressHydrationWarning>
-        <head>
+        <head>{/* Metatags, links, etc. can go here */}</head>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased max-w-5xl m-auto`}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
-          />
-        </head>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased max-w-5xl m-auto`}
-        >
-          <header className="flex justify-end items-center p-4 gap-4 h-16">
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header>
-          {children}
+          >
+            <UserStoreSync /> {/* User store sync component */}
+            <header className="flex justify-end items-center p-4 gap-4 h-16">
+              <SignedOut>
+                <SignInButton />
+                <SignUpButton />
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </header>
+            {children}
+            <Toaster />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

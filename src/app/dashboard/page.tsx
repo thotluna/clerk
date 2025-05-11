@@ -1,34 +1,15 @@
-import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
-import { auth } from '@clerk/nextjs/server' // Import auth para obtener userId en Server Component
+import { auth } from '@clerk/nextjs/server'
+import { ContestFormModal } from './components/contest-form-modal'
+import { getAllContest } from './services/contest.service'
 
-interface Contest {
-  id: string // uuid
-  created_at: string
-  name: string | null
-  github_repo_c: string | null
-  github_repo_r: string | null
-  label_name: string | null
-  start_date: string | null
-  end_date: string | null
-  active: boolean | null
-  creator_id: string | null // ID del usuario de Clerk
-}
-
-async function getContests(): Promise<Contest[]> {
+async function getContests() {
   const { userId } = await auth()
 
-  console.log({ userId })
-
-  // Protect the route by checking if the user is signed in
   if (!userId) {
     return []
   }
 
-  const { data, error } = await supabase
-    .from('contests') // Asumiendo que la tabla se llama 'contests'
-    .select('*')
-    .eq('creator_id', userId) // Filtrar por el ID del creador
+  const { data, error } = await getAllContest({ userId })
 
   if (error) {
     console.error('Error fetching contests:', error)
@@ -44,11 +25,7 @@ export default async function DashboardPage() {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Mis Concursos</h1>
-        <Link href="/dashboard/concursos/nuevo" legacyBehavior>
-          <a className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Crear Nuevo Concurso
-          </a>
-        </Link>
+        <ContestFormModal />
       </div>
 
       {contests.length === 0 ? (

@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { useUser } from '@clerk/nextjs'
+import { GithubIcon } from 'lucide-react'
 import { useState } from 'react'
 
 export default function ConnectGitHubButton() {
@@ -10,13 +11,18 @@ export default function ConnectGitHubButton() {
   const [error, setError] = useState<string | null>(null)
 
   const handleConnectGitHub = async () => {
-    if (!user) return
+    if (!user) {
+      console.log('no hay usuario')
+
+      return
+    }
 
     setIsLoading(true)
     setError(null)
 
     try {
       const currentPath = window.location.href
+      console.log({ currentPath })
 
       const externalAccount = await user.createExternalAccount({
         strategy: 'oauth_github',
@@ -50,18 +56,21 @@ export default function ConnectGitHubButton() {
     return <p>Por favor, inicia sesión para conectar tu cuenta de GitHub.</p>
   }
 
-  const hasGitHubConnection = user.externalAccounts.some(
-    (acc) => acc.provider === 'github'
-  )
-
-  if (hasGitHubConnection) {
-    return <p>Ya tienes una cuenta de GitHub conectada.</p>
-  }
-
   return (
     <div>
-      <Button onClick={handleConnectGitHub} disabled={isLoading}>
-        {isLoading ? 'Conectando...' : 'Conectar cuenta de GitHub'}
+      <Button
+        variant={'outline'}
+        type="button"
+        onClick={handleConnectGitHub}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <p>&apos;Conectando...&apos;</p>
+        ) : (
+          <div className="flex items-center gap-1">
+            <GithubIcon /> Conectar cuenta de GitHub
+          </div>
+        )}
       </Button>
 
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
