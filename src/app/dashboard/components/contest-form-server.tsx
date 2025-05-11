@@ -1,8 +1,8 @@
 'use server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { ContestForm } from './contest-form'
-import { GithubService } from '@/lib/github.service'
 import { toast } from 'sonner'
+import { GithubService } from '../services/github.service'
 
 export async function ContestFormServer() {
   const { userId } = await auth()

@@ -32,7 +32,7 @@ import {
 import ConnectGitHubButton from './button-github'
 import { Switch } from '@/components/ui/switch'
 import { useContentForm } from '../hooks/use-contest-form'
-import { constestFormDefaultValues } from '../constant/constans'
+import { constestFormDefaultValues } from '../constants/constants'
 
 interface Props {
   userId: string

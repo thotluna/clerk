@@ -28,7 +28,7 @@ export async function getAllContest({ userId }: Props) {
 }
 
 export async function saveContest(contentDetail: ContestDetails) {
-  const { data, error } = await supabase.from('contests').insert([
+  const { data } = await supabase.from('contests').insert([
     {
       name: contentDetail.name,
       description: contentDetail.description,
@@ -41,8 +41,6 @@ export async function saveContest(contentDetail: ContestDetails) {
       creator_id: contentDetail.userId,
     },
   ])
-
-  console.log({ data, error })
 
   return data
 }
