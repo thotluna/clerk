@@ -1,36 +1,72 @@
 'use server'
+
 import { auth, clerkClient } from '@clerk/nextjs/server'
-import { ContestForm } from './contest-form'
-import { toast } from 'sonner'
 import { GithubService } from '../services/github.service'
+import { ContestForm } from './contest-form' // Changed import from ContestFormLoader to ContestForm
 
 export async function ContestFormServer() {
   const { userId } = await auth()
-  const { users } = await clerkClient()
-  let nameRepositories: string[] = []
-  let owner: string = ''
+  const client = await clerkClient()
 
   if (!userId) {
-    toast.error('Se requiere usuario authenticado')
-    return
+    return (
+      <ContestForm
+        owner={null}
+        repositories={null}
+        error="Usuario no autenticado. Por favor, inicie sesión."
+      />
+    )
   }
 
-  const tokens = await users.getUserOauthAccessToken(userId, 'oauth_github')
+  const tokensResponse = await client.users.getUserOauthAccessToken(
+    userId,
+    'oauth_github'
+  )
 
-  if (!tokens || tokens.data.length === 0) {
-    toast.error('Problemas al obtener la autorizacion de Github')
+  if (
+    !tokensResponse ||
+    !tokensResponse.data ||
+    tokensResponse.data.length === 0 ||
+    !tokensResponse.data[0].token
+  ) {
+    return (
+      <ContestForm
+        owner={null}
+        repositories={null}
+        error="No se pudo obtener la autorización de GitHub. Verifique los permisos o reconecte su cuenta."
+      />
+    )
   }
 
-  const gitHubService = new GithubService(tokens.data[0].token)
+  const githubToken = tokensResponse.data[0].token
+  const gitHubService = new GithubService(githubToken)
 
-  owner = await gitHubService.getUserName()
+  const { owner, error: ownerError } = await gitHubService.getUserName()
 
-  nameRepositories = await gitHubService.getAllNameRepository()
+  if (ownerError || !owner) {
+    return (
+      <ContestForm
+        owner={null}
+        repositories={null}
+        error={
+          ownerError ||
+          'Error inesperado: No se pudo determinar el propietario de GitHub.'
+        }
+      />
+    )
+  }
+
+  // At this point, owner is guaranteed to be a string
+  const { repositories, error: reposError } =
+    await gitHubService.getAllNameRepository()
+
+  if (reposError) {
+    // Pass owner and empty repos, ContestForm will show toast for reposError
+    return <ContestForm owner={owner} repositories={[]} error={reposError} />
+  }
+
+  // Success case: all data fetched
   return (
-    <ContestForm
-      userId={userId!}
-      repositories={nameRepositories}
-      owner={owner}
-    />
+    <ContestForm owner={owner} repositories={repositories || []} error={null} />
   )
 }

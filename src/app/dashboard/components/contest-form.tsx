@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import {
   Form,
   FormControl,
@@ -33,16 +34,36 @@ import ConnectGitHubButton from './button-github'
 import { Switch } from '@/components/ui/switch'
 import { useContentForm } from '../hooks/use-contest-form'
 import { constestFormDefaultValues } from '../constants/constants'
+import { useUserStore } from '@/lib/store/userStore'
+import { toast } from 'sonner'
 
 interface Props {
-  userId: string
-  repositories?: string[]
-  owner: string
+  repositories?: string[] | null
+  owner: string | null
+  error?: string | null
 }
 
-export function ContestForm({ repositories, owner, userId }: Props) {
+export function ContestForm({
+  repositories,
+  owner: initialOwner,
+  error,
+}: Props) {
+  const setOwnerInStore = useUserStore((state) => state.setOwner)
+  const currentOwnerInStore = useUserStore((state) => state.owner)
+
+  if (error) {
+    toast.error(error)
+  }
+
+  useEffect(() => {
+    if (initialOwner && initialOwner !== currentOwnerInStore) {
+      setOwnerInStore(initialOwner)
+    }
+  }, [initialOwner, currentOwnerInStore, setOwnerInStore])
+
   const { openRepositories, setOpenRepositories, form, onSubmit } =
-    useContentForm(constestFormDefaultValues, owner, userId)
+    useContentForm(constestFormDefaultValues, initialOwner)
+
   return (
     <Form {...form}>
       <form
@@ -204,22 +225,22 @@ export function ContestForm({ repositories, owner, userId }: Props) {
           control={form.control}
           name="startDate"
           render={({ field }) => (
-            <FormItem>
-              Inicio del concurso
+            <FormItem className="flex flex-col">
+              <FormLabel>Fecha de inicio del concurso</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant={'outline'}
                       className={cn(
-                        'w-full pl-3 text-left font-normal',
+                        'w-[240px] pl-3 text-left font-normal',
                         !field.value && 'text-muted-foreground'
                       )}
                     >
                       {field.value ? (
                         format(field.value, 'PPP')
                       ) : (
-                        <span>Elige una fecha</span>
+                        <span>Selecciona una fecha</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -230,7 +251,10 @@ export function ContestForm({ repositories, owner, userId }: Props) {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date < new Date()}
+                    disabled={(date) =>
+                      date <
+                      new Date(new Date().setDate(new Date().getDate() - 1))
+                    }
                     initialFocus
                   />
                 </PopoverContent>
@@ -244,22 +268,22 @@ export function ContestForm({ repositories, owner, userId }: Props) {
           control={form.control}
           name="endDate"
           render={({ field }) => (
-            <FormItem>
-              Fin de la entrega de proyectos
+            <FormItem className="flex flex-col">
+              <FormLabel>Fecha de fin del concurso</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant={'outline'}
                       className={cn(
-                        'w-full pl-3 text-left font-normal',
+                        'w-[240px] pl-3 text-left font-normal',
                         !field.value && 'text-muted-foreground'
                       )}
                     >
                       {field.value ? (
                         format(field.value, 'PPP')
                       ) : (
-                        <span>Elige una fecha</span>
+                        <span>Selecciona una fecha</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -270,12 +294,12 @@ export function ContestForm({ repositories, owner, userId }: Props) {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => {
-                      const startDate = form.getValues('startDate')
-                      return (
-                        (startDate && date < startDate) || date < new Date()
-                      )
-                    }}
+                    disabled={(date) =>
+                      form.getValues('startDate')
+                        ? date < form.getValues('startDate')!
+                        : date <
+                          new Date(new Date().setDate(new Date().getDate() - 1))
+                    }
                     initialFocus
                   />
                 </PopoverContent>
@@ -286,7 +310,10 @@ export function ContestForm({ repositories, owner, userId }: Props) {
         />
 
         <div className="w-full flex  flex-row-reverse gap-4 mt-4  ">
-          <Button disabled={form.formState.isLoading || !owner} type="submit">
+          <Button
+            disabled={form.formState.isLoading || !initialOwner}
+            type="submit"
+          >
             Submit
           </Button>
           <Button variant="outline" type="reset" onClick={() => form.reset()}>
