@@ -2,8 +2,8 @@ name: Process GitHub Issues
 
 on:
   workflow_dispatch: # Permite la ejecución manual
-  schedule:
-    - cron: '0 */12 * * *' # Se ejecuta cada 12 horas (a las 00:00 y 12:00 UTC)
+  # schedule:
+  #   - cron: '0 */12 * * *' # Se ejecuta cada 12 horas (a las 00:00 y 12:00 UTC)
 
 jobs:
   process_issues:
@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' 
+          node-version: '20'
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4 # Usando v4 que es más reciente
