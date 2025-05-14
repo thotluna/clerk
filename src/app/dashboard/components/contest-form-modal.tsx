@@ -3,10 +3,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription, // Import DialogDescription
 } from '@/components/ui/dialog'
 import { DialogTrigger } from '@radix-ui/react-dialog'
 import { Plus } from 'lucide-react'
-import { ContestFormServer } from './contest-form-server'
+import { ContestFormServer } from './contest.form.server'
 
 export function ContestFormModal() {
   return (
@@ -18,6 +19,9 @@ export function ContestFormModal() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nuevo concurso</DialogTitle>
+          <DialogDescription>
+            Completa los detalles para crear un nuevo concurso.
+          </DialogDescription>
           <ContestFormServer />
         </DialogHeader>
       </DialogContent>

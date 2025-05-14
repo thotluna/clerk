@@ -1,21 +1,10 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js'
 import { chromium } from 'playwright'
 import { Octokit } from '@octokit/rest'
-
-interface ProjectRecord {
-  id?: number
-  issue_number: number
-  github_repo_owner: string
-  github_repo_name: string
-  issue_title: string
-  issue_url: string
-  project_url: string | null
-  screenshot_path: string | null
-  project_body: string | null
-  github_issue_created_at: string
-  github_issue_updated_at: string
-  last_processed_at: string
-}
+import {
+  ContestProjectService,
+  ProjectRecord,
+} from '../../src/services/contest_project.service'
 
 interface GitHubIssue {
   number: number
@@ -28,14 +17,9 @@ interface GitHubIssue {
 }
 
 interface ContestDetails {
-  id: string
-  name: string
-  github_repo_owner: string
-  github_repo_name: string
-  label_name: string
-  start_date: string
-  end_date: string
-  active: boolean
+  id: string // For use as contest_id
+  name_repository: string // To derive owner and repoName
+  label: string | null // To filter issues (can be null)
 }
 
 const SUPABASE_URL = process.env.SUPABASE_URL
@@ -53,29 +37,35 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
   process.exit(1)
 }
 
-async function getActiveContestDetails() {
+async function getActiveContestDetails(): Promise<ContestDetails[]> {
   try {
     if (!supabase) {
-      console.error('no hay supabase')
+      console.error('Supabase client is not initialized.')
       process.exit(1)
     }
     const { data: contests, error: contentsError } = await supabase
       .from('contests')
-      .select()
-      .eq('active', true)
+      .select('id, name_repository, label') // Specific fields, state removed as unused
+      .eq('state', 'ACTIVE') // New state filter
 
-    if (contentsError || !contests) {
-      console.error('Error al extraer el contents')
+    if (contentsError) {
+      // Simplified error check
+      console.error('Error fetching active contests:', contentsError.message)
       process.exit(1)
     }
 
-    return contests as ContestDetails[]
+    if (!contests) {
+      // If no contests or data is null
+      console.warn('No active contests found.')
+      return [] // Return empty array instead of exiting
+    }
+
+    return contests as ContestDetails[] // Casting is now safer
   } catch (error: unknown) {
     console.error(
-      'Error fetching active contest details:',
+      'Exception in getActiveContestDetails:',
       (error as Error).message
     )
-    // console.error('Stack trace:', (error as Error).stack); // Opcional para más detalle
     process.exit(1)
   }
 }
@@ -98,15 +88,17 @@ function extractProjectUrl(issueBody: string | null): string | null {
 }
 
 async function processIssues(
-  owner: string,
-  repoName: string,
-  octokit: Octokit,
-  labelName?: string | null // Añadido labelName como parámetro opcional
+  octokit: Octokit, // Octokit instance as first argument
+  contestId: string, // New contestId parameter
+  owner: string, // Existing parameter
+  repoName: string, // Existing parameter
+  label: string | null // Renamed from labelName, type might be more specific if always string from DB
 ) {
   console.log(
-    `Processing issues for ${owner}/${repoName}` +
-      (labelName ? ` with label '${labelName}'` : ' (no label filter)')
+    `Processing issues for contest ${contestId} (${owner}/${repoName})` +
+      (label ? ` with label '${label}'` : ' (no label filter)')
   )
+  const contestProjectService = new ContestProjectService(supabase!) // Added service instantiation
   if (!supabase) {
     console.error('Supabase client is not available. Exiting.')
     process.exit(1)
@@ -126,44 +118,19 @@ async function processIssues(
       per_page: 100,
     }
 
-    if (labelName && labelName.trim() !== '') {
-      listOptions.labels = labelName.trim()
+    if (label && label.trim() !== '') {
+      listOptions.labels = label.trim()
     }
 
     const { data: githubIssues } = await octokit.issues.listForRepo(listOptions)
 
-    const dbProjectMap = new Map<
-      number,
-      { id: number; issue_number: number; github_issue_updated_at: string }
-    >()
-    const { data: allDbProjects, error: allDbError } = await supabase
-      .from('contest_projects')
-      .select('id, issue_number, github_issue_updated_at')
-      .eq('github_repo_owner', owner)
-      .eq('github_repo_name', repoName)
-
-    if (allDbError) {
-      console.error(
-        'Error fetching existing project data from Supabase:',
-        allDbError.message
-      )
-    } else if (allDbProjects) {
-      for (const p of allDbProjects) {
-        dbProjectMap.set(p.issue_number, {
-          id: p.id,
-          issue_number: p.issue_number,
-          github_issue_updated_at: p.github_issue_updated_at,
-        })
-      }
-    }
+    // Former dbProjectMap population logic removed, using service instead.
+    const dbProjectMap =
+      await contestProjectService.getProjectsByContestId(contestId)
 
     for (const ghIssue of githubIssues as GitHubIssue[]) {
       let needsFullProcessing = true
-      let existingSupabaseRecord: {
-        id: number
-        issue_number: number
-        github_issue_updated_at: string
-      } | null = null
+      let existingSupabaseRecord: ProjectRecord | null = null // Type adjusted to full ProjectRecord
 
       const recordFromMap = dbProjectMap.get(ghIssue.number)
       if (recordFromMap) {
@@ -248,8 +215,9 @@ async function processIssues(
         const nowISO = new Date().toISOString()
         const projectRecordToSave: Omit<ProjectRecord, 'id'> = {
           issue_number: ghIssue.number,
-          github_repo_owner: owner,
-          github_repo_name: repoName,
+          // github_repo_owner: owner, // Removed as per new schema
+          // github_repo_name: repoName, // Removed as per new schema
+          contest_id: contestId, // Added contest_id
           issue_title: ghIssue.title,
           issue_url: ghIssue.html_url,
           project_url: extractedUrl,
@@ -261,11 +229,14 @@ async function processIssues(
         }
 
         if (existingSupabaseRecord) {
-          const { error: updateError } = await supabase
-            .from('contest_projects')
-            .update(projectRecordToSave)
-            .eq('id', existingSupabaseRecord.id)
-            .select()
+          // Use ContestProjectService for update
+          const { error: updateError } = await contestProjectService
+            .updateProject(
+              existingSupabaseRecord.id!, // id is known to exist here
+              projectRecordToSave
+            )
+            .then((data) => ({ data, error: null }))
+            .catch((err) => ({ data: null, error: err }))
 
           if (updateError) {
             console.error(
@@ -273,10 +244,11 @@ async function processIssues(
             )
           }
         } else {
-          const { error: insertError } = await supabase
-            .from('contest_projects')
-            .insert(projectRecordToSave)
-            .select()
+          // Use ContestProjectService for insert
+          const { error: insertError } = await contestProjectService
+            .addProject(projectRecordToSave)
+            .then((data) => ({ data, error: null }))
+            .catch((err) => ({ data: null, error: err }))
 
           if (insertError) {
             console.error(
@@ -296,21 +268,40 @@ async function processIssues(
 }
 
 async function main() {
-  const contents = await getActiveContestDetails()
-  if (!contents) {
-    console.error('problemas con contents')
-    process.exit(1)
+  const activeContests = await getActiveContestDetails()
+  // getActiveContestDetails now returns [] if no contests are found, so no need to check for !activeContests for process.exit
+  if (activeContests.length === 0) {
+    console.log('No active contests to process.')
+    return // Exit peacefully if no contests
   }
-  const octokit = new Octokit({ auth: GITHUB_TOKEN })
 
-  contents.forEach((content) => {
-    processIssues(
-      content.github_repo_owner,
-      content.github_repo_name,
-      octokit,
-      content.label_name // Pasar label_name
+  const octokitInstance = new Octokit({ auth: GITHUB_TOKEN })
+
+  for (const contest of activeContests) {
+    if (!contest.name_repository) {
+      console.warn(
+        `Contest ID ${contest.id} is missing name_repository. Skipping.`
+      )
+      continue
+    }
+    const [owner, repoName] = contest.name_repository.split('/')
+    if (!owner || !repoName) {
+      console.warn(
+        `Invalid name_repository format: "${contest.name_repository}" for contest ID ${contest.id}. Skipping.`
+      )
+      continue
+    }
+
+    // Assuming processIssues will be updated to match this new signature:
+    // processIssues(octokit: Octokit, contestId: string, owner: string, repoName: string, label: string | null)
+    await processIssues(
+      octokitInstance,
+      contest.id, // contest_id
+      owner,
+      repoName,
+      contest.label // label from the contest
     )
-  })
+  }
 }
 
 main()

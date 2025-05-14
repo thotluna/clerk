@@ -1,18 +1,12 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import { Geist_Mono } from 'next/font/google'
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { UserStoreSync } from '@/components/auth/UserStoreSync' // Import UserStoreSync
 import { Toaster } from '@/components/ui/sonner'
+import { Header } from './components/header'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -48,17 +42,11 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <UserStoreSync /> {/* User store sync component */}
-            <header className="flex justify-end items-center p-4 gap-4 h-16">
-              <SignedOut>
-                <SignInButton />
-                <SignUpButton />
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </header>
-            {children}
-            <Toaster />
+            <div className="min-h-screen bg-[#0A0A0A] text-white">
+              <Header />
+              {children}
+              <Toaster />
+            </div>
           </ThemeProvider>
         </body>
       </html>
