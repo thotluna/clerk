@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { ContestFormModal } from './components/contest-form-modal'
-import { getAllContest } from './services/contest.service'
+import { getAllContestByOwner } from './services/contest.service'
+import { ContestState } from './constants/constants'
 
 async function getContests() {
   const { userId } = await auth()
@@ -9,7 +10,7 @@ async function getContests() {
     return []
   }
 
-  const { data, error } = await getAllContest({ userId })
+  const { data, error } = await getAllContestByOwner({ userId })
 
   if (error) {
     console.error('Error fetching contests:', error)
@@ -42,13 +43,11 @@ export default async function DashboardPage() {
               </h2>
               <p className="text-sm text-gray-600 mb-1">
                 Etiqueta GitHub:{' '}
-                <span className="font-medium">
-                  {contest.label_name || 'N/A'}
-                </span>
+                <span className="font-medium">{contest.label || 'N/A'}</span>
               </p>
               <p className="text-sm text-gray-600 mb-2">
                 Estado:{' '}
-                {contest.active ? (
+                {contest.state === ContestState.ACTIVE ? (
                   <span className="text-green-600 font-semibold">Activo</span>
                 ) : (
                   <span className="text-red-600 font-semibold">
@@ -56,11 +55,6 @@ export default async function DashboardPage() {
                   </span>
                 )}
               </p>
-              {/* Aquí podrías añadir más detalles o enlaces, como ver proyectos del concurso, editar, etc. */}
-              {/* Ejemplo de enlace para ver detalles/proyectos (a implementar) */}
-              {/* <Link href={`/dashboard/concursos/${contest.id}`} legacyBehavior>
-                <a className="text-blue-500 hover:underline">Ver Detalles</a>
-              </Link> */}
             </div>
           ))}
         </div>
