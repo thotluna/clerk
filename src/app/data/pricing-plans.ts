@@ -1,0 +1,46 @@
+export const pricingPlans = [
+  {
+    title: 'Concurso Único',
+    description: 'Para organizadores ocasionales',
+    price: 99,
+    period: 'concurso',
+    features: [
+      '1 concurso de programación',
+      'Hasta 100 participantes',
+      'Panel de control básico',
+      'Soporte por email',
+    ],
+    buttonText: 'Comenzar',
+  },
+  {
+    title: 'Paquete Semestral',
+    description: 'Para organizadores frecuentes',
+    price: 499,
+    period: 'semestre',
+    features: [
+      '15 concursos de programación',
+      'Hasta 500 participantes por concurso',
+      'Personalización de la plataforma',
+      'Análisis avanzado de resultados',
+      'Soporte prioritario 24/7',
+    ],
+    buttonText: 'Comenzar',
+    isPopular: true,
+    variant: 'featured' as const,
+  },
+  {
+    title: 'Suscripción Anual',
+    description: 'Para organizadores profesionales',
+    price: 899,
+    period: 'año',
+    features: [
+      'Concursos ilimitados',
+      'Participantes ilimitados',
+      'Personalización completa',
+      'API para integración',
+      'Soporte dedicado 24/7',
+      'Reportes y análisis avanzados',
+    ],
+    buttonText: 'Contactar',
+  },
+]
