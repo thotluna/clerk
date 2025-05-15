@@ -3,10 +3,10 @@ import { ChevronRight } from 'lucide-react'
 
 export function Hero() {
   return (
-    <section className="relative pt-20 pb-24 overflow-hidden">
+    <section className="relative pt-20 pb-24">
       <div className="absolute inset-0 bg-[#0F0F0F]">
         <div className="absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-gradient-to-r from-purple-700/20 to-indigo-700/20 blur-3xl"></div>
-        <div className="absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-gradient-to-l from-blue-700/20 to-cyan-700/20 blur-3xl"></div>
+        <div className="absolute -right-50 bottom-0 h-[400px] w-[400px] rounded-full bg-gradient-to-l from-blue-700/20 to-cyan-700/20 blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
@@ -15,30 +15,31 @@ export function Hero() {
             <div className="inline-block px-4 py-1.5 mb-5 text-xs md:text-sm font-medium rounded-full bg-gradient-to-r from-purple-600/10 to-blue-600/10 border border-purple-500/20 text-purple-400">
               Lanzamiento 2025 - Únete a la lista de espera
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
-              <span className="block">Compite, Programa,</span>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-6">
+              <span className="block">Tu Audiencia, Tus Desafíos:</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">
-                Gana Premios
+                Organiza Concursos de Programación Memorables.
               </span>
             </h1>
             <p className="text-gray-300 text-lg md:text-xl mb-8 max-w-lg">
-              Participa en competencias de programación diseñadas para
-              desarrolladores de todos los niveles. Demuestra tus habilidades,
-              aprende nuevas tecnologías y gana premios increíbles.
+              Diseñada para creadores de contenido como tú. Ofrece a tus
+              seguidores desafíos únicos, gestiona participantes fácilmente y
+              haz crecer tu comunidad. Nosotros ponemos la plataforma, tú la
+              inspiración.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href="#contests"
+                href="#pricingn"
                 className="flex items-center justify-center px-6 py-3 rounded-md bg-purple-600 hover:bg-purple-700 transition text-white font-medium"
               >
-                Ver Concursos
+                Planes para Creadores
                 <ChevronRight className="ml-2 h-5 w-5" />
               </a>
               <a
                 href="#"
                 className="flex items-center justify-center px-6 py-3 rounded-md bg-[#1D1D1D] hover:bg-[#2A2A2A] transition text-white border border-gray-700"
               >
-                Saber Más
+                Ver Concursos
               </a>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { HowItWorks } from './components/how-it-works'
 import { Testimonials } from './components/testimonials'
 import { Footer } from './components/footer'
 import Pricingn from './components/pricing'
+import Participation from './components/participation'
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
         <Hero />
         <Contests />
         <Pricingn />
+        <Participation />
         <Prizes />
         <HowItWorks />
         <Testimonials />

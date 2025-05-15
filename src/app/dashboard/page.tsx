@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { ContestFormModal } from './components/contest-form-modal'
 import { getAllContestByOwner } from './services/contest.service'
-import { ContestState } from './constants/constants'
+import { ContestState } from '@/constants/constants'
 
 async function getContests() {
   const { userId } = await auth()

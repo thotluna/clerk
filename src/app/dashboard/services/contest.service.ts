@@ -1,6 +1,6 @@
 'use server'
+import { ContestState } from '@/constants/constants'
 import { supabase } from '@/lib/supabaseClient'
-import { ContestState } from '../constants/constants'
 import { v4 as uuidv4 } from 'uuid'
 
 export interface Contest {
