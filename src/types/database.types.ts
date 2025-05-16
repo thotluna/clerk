@@ -11,91 +11,108 @@ export type Database = {
     Tables: {
       contest_projects: {
         Row: {
+          contest_id: string
           created_at: string
-          github_issue_created_at: string
-          github_issue_updated_at: string
-          github_repo_name: string
-          github_repo_owner: string
+          github_issue_created_at: string | null
+          github_issue_updated_at: string | null
           id: string
           issue_number: number
           issue_title: string
-          issue_url: string
+          issue_url: string | null
           last_processed_at: string
           project_body: string | null
           project_url: string | null
           screenshot_path: string | null
+          updated_at: string
         }
         Insert: {
+          contest_id: string
           created_at?: string
-          github_issue_created_at: string
-          github_issue_updated_at: string
-          github_repo_name: string
-          github_repo_owner: string
+          github_issue_created_at?: string | null
+          github_issue_updated_at?: string | null
           id?: string
           issue_number: number
           issue_title: string
-          issue_url: string
-          last_processed_at: string
-          project_body?: string | null
-          project_url?: string | null
-          screenshot_path?: string | null
-        }
-        Update: {
-          created_at?: string
-          github_issue_created_at?: string
-          github_issue_updated_at?: string
-          github_repo_name?: string
-          github_repo_owner?: string
-          id?: string
-          issue_number?: number
-          issue_title?: string
-          issue_url?: string
+          issue_url?: string | null
           last_processed_at?: string
           project_body?: string | null
           project_url?: string | null
           screenshot_path?: string | null
+          updated_at?: string
         }
-        Relationships: []
+        Update: {
+          contest_id?: string
+          created_at?: string
+          github_issue_created_at?: string | null
+          github_issue_updated_at?: string | null
+          id?: string
+          issue_number?: number
+          issue_title?: string
+          issue_url?: string | null
+          last_processed_at?: string
+          project_body?: string | null
+          project_url?: string | null
+          screenshot_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'contest_projects_contest_id_fkey'
+            columns: ['contest_id']
+            isOneToOne: false
+            referencedRelation: 'contests'
+            referencedColumns: ['id']
+          },
+        ]
       }
       contests: {
         Row: {
-          active: boolean
           created_at: string
-          creator_id: string | null
           description: string | null
-          end_date: string | null
-          github_repo_name: string
-          github_repo_owner: string
+          ended: string | null
           id: string
-          label_name: string | null
+          image_url: string | null
+          label: string | null
           name: string
-          start_date: string | null
+          name_repository: string | null
+          owner: string
+          participants: number | null
+          start: string | null
+          state: Database['public']['Enums']['contest_state_enum']
+          updated_at: string
+          user_id: string | null
         }
         Insert: {
-          active?: boolean
           created_at?: string
-          creator_id?: string | null
           description?: string | null
-          end_date?: string | null
-          github_repo_name: string
-          github_repo_owner: string
+          ended?: string | null
           id?: string
-          label_name?: string | null
+          image_url?: string | null
+          label?: string | null
           name: string
-          start_date?: string | null
+          name_repository?: string | null
+          owner: string
+          participants?: number | null
+          start?: string | null
+          state?: Database['public']['Enums']['contest_state_enum']
+          updated_at?: string
+          user_id?: string | null
         }
         Update: {
-          active?: boolean
           created_at?: string
-          creator_id?: string | null
           description?: string | null
-          end_date?: string | null
-          github_repo_name?: string
-          github_repo_owner?: string
+          ended?: string | null
           id?: string
-          label_name?: string | null
+          image_url?: string | null
+          label?: string | null
           name?: string
-          start_date?: string | null
+          name_repository?: string | null
+          owner?: string
+          participants?: number | null
+          start?: string | null
+          state?: Database['public']['Enums']['contest_state_enum']
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -107,7 +124,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      contest_state_enum: 'DRAFT' | 'UPCOMING' | 'ACTIVE' | 'ENDED' | 'CANCELED'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -222,8 +239,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      contest_state_enum: ['DRAFT', 'UPCOMING', 'ACTIVE', 'ENDED', 'CANCELED'],
+    },
   },
 } as const
-
-export type ContestRow = Database['public']['Tables']['contests']['Row']

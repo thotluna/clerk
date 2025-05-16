@@ -1,5 +1,5 @@
 import React from 'react'
-import { steps } from './step'
+import { steps } from '../data/step'
 
 export const HowItWorks = () => {
   return (
@@ -36,7 +36,9 @@ export const HowItWorks = () => {
               <h3 className="text-xl font-bold text-white mb-3">
                 {step.title}
               </h3>
-              <p className="text-gray-400">{step.description}</p>
+              <p className="text-gray-400 text-pretty text-left">
+                {step.description}
+              </p>
             </div>
           ))}
         </div>

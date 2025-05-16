@@ -1,5 +1,5 @@
+import { ContestState } from '@/constants/constants'
 import { z } from 'zod'
-import { ContestState } from '../constants/constants'
 
 export const contestFormSchema = z.object({
   name: z.string().min(1, 'Nombre es requerido'),

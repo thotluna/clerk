@@ -3,7 +3,7 @@ import { PricingCard } from './pricing-card'
 
 export default function Pricingn() {
   return (
-    <section className="w-full py-12 bg-black text-white">
+    <section id="pricingn" className="w-full py-12 bg-black text-white">
       <div className="container px-4 md:px-6 mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-2">Planes para Creadores</h2>
