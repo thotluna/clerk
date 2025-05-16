@@ -9,10 +9,12 @@
     "lint": "next lint",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
+    "lint-staged": "lint-staged",
     "commit": "cz",
     "test": "jest",
     "test:watch": "jest --watch",
-    "db:generate:type": "pnpm dlx supabase gen types typescript --project-id ishjthtydevzjsaksfkw --schema public > src/types/database.types.ts"
+    "db:generate:type": "pnpm dlx supabase gen types typescript --project-id ishjthtydevzjsaksfkw --schema public > src/types/database.types.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.19.1",
@@ -89,5 +91,10 @@
     "*.{json,md,css}": [
       "prettier --write"
     ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
