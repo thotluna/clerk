@@ -1,3 +1,4 @@
+import { auth } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 
 // Obtén la URL de Supabase y la clave anónima de las variables de entorno
@@ -14,5 +15,16 @@ if (!supabaseServiceRole) {
   )
 }
 
+const token = async () => {
+  const authClerk = await auth()
+  return authClerk.getToken({ template: 'supabase' })
+}
+
 // Crea y exporta el cliente de Supabase
-export const supabase = createClient(supabaseUrl, supabaseServiceRole)
+export const supabase = createClient(supabaseUrl, supabaseServiceRole, {
+  global: {
+    headers: {
+      Authorization: `Bearer ${await token()}`,
+    },
+  },
+})
